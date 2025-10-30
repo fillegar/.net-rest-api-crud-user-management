@@ -1,15 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using User.Core.Model;
 using User.Service;
 
 namespace User.API.Controllers
 {
-    [AutoValidateAntiforgeryToken]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
-        
         private readonly UserInfoService _userInfoService;
 
         public UserController(UserInfoService userInfoService)
@@ -18,30 +20,48 @@ namespace User.API.Controllers
         }
 
         [HttpGet]
-        public List<UserInfo> getUserInfos()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<UserInfo>>> GetUserInfos(CancellationToken cancellationToken)
         {
-            return _userInfoService.getUserInfos();
+            var users = await _userInfoService.GetUserInfosAsync(cancellationToken);
+            return Ok(users);
         }
 
         [HttpPost]
-        public String addUserInfo([FromBody] UserInfo userInfo)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<UserInfo>> AddUserInfo([FromBody] UserInfo userInfo, CancellationToken cancellationToken)
         {
-            _userInfoService.addUserInfo(userInfo);
-            return "User created successfully!";
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            await _userInfoService.AddUserInfoAsync(userInfo, cancellationToken);
+
+            return CreatedAtAction(nameof(GetUserInfos), new { userInfo.Id }, userInfo);
         }
 
         [HttpPut]
-        public String updateUserInfo([FromBody] UserInfo userInfo)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateUserInfo([FromBody] UserInfo userInfo, CancellationToken cancellationToken)
         {
-            _userInfoService.updateUserInfo(userInfo);
-            return "User updated successfully!";
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            await _userInfoService.UpdateUserInfoAsync(userInfo, cancellationToken);
+            return NoContent();
         }
 
         [HttpDelete]
-        public String deleteUserInfo([FromBody] UserInfo userInfo)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeleteUserInfo([FromBody] UserInfo userInfo, CancellationToken cancellationToken)
         {
-            _userInfoService.removeUserInfo(userInfo);
-            return "User removed successfully!";
+            await _userInfoService.RemoveUserInfoAsync(userInfo, cancellationToken);
+            return NoContent();
         }
     }
 }

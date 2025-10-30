@@ -1,6 +1,6 @@
-﻿namespace User.Core
+namespace User.Core
 {
-    public class Role
+    public static class Role
     {
         public const string SuperAdmin = "SuperAdmin";
         public const string Admin = "Admin";
