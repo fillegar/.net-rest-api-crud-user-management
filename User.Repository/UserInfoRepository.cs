@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using User.Core.Model;
 
 namespace User.Repository
@@ -6,91 +9,42 @@ namespace User.Repository
     public class UserInfoRepository
     {
         private readonly UserInfoDbContext _context;
+
         public UserInfoRepository(UserInfoDbContext context)
         {
             _context = context;
         }
 
-
-        public List<UserInfo> Get()
+        public Task<List<UserInfo>> GetAsync(CancellationToken cancellationToken = default)
         {
-            try
-            {
-                return _context.UserInfos.ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw new Exception(ex.Message);
-            }
+            return _context.UserInfos
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<UserInfo> getUserInfoByEmail(string email)
+        public Task<UserInfo?> GetUserInfoByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                return await _context.UserInfos.Where(item => item.Email.Equals(email)).FirstOrDefaultAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw new Exception(ex.Message);
-            }
+            return _context.UserInfos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(item => item.Email == email, cancellationToken);
         }
 
-        public void saveChanges()
+        public async Task AddAsync(UserInfo userInfo, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw new Exception(ex.Message);
-            }
+            await _context.UserInfos.AddAsync(userInfo, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public void Add(UserInfo userInfo)
+        public async Task UpdateAsync(UserInfo userInfo, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                _context.UserInfos.Add(userInfo);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw new Exception(ex.Message);
-            }
+            _context.UserInfos.Update(userInfo);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public void Remove(UserInfo userInfo)
+        public async Task RemoveAsync(UserInfo userInfo, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                _context.UserInfos.Remove(userInfo);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task Update(UserInfo userInfo)
-        {
-            try
-            {
-                _context.Entry(userInfo).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw new Exception(ex.Message);
-            }
+            _context.UserInfos.Remove(userInfo);
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

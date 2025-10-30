@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using User.Core;
 
 namespace User.API.Controllers
 {
-
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
@@ -13,47 +13,34 @@ namespace User.API.Controllers
     {
         [Authorize(Roles = Role.Admin)]
         [HttpGet("admin")]
-        public List<Product> getAdminProducts()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<Product>> GetAdminProducts()
         {
-            return new List<Product>()
-           {
-                new Product(){
-                Name = "admin product1"
-                },
-                new Product(){
-                    Name= "admin product2"
-                }
-           };
+            return Ok(CreateProducts("admin"));
         }
-
 
         [Authorize(Roles = Role.SuperAdmin)]
         [HttpGet("superAdmin")]
-        public List<Product> getSuperAdminProducts()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<Product>> GetSuperAdminProducts()
         {
-            return new List<Product>()
-            {
-                new Product(){
-                Name = "super admin product1"
-                },
-                new Product(){
-                    Name= "super admin product2"
-                }
-            };
+            return Ok(CreateProducts("super admin"));
         }
 
         [Authorize(Roles = Role.BasicUser)]
         [HttpGet("basicUser")]
-        public List<Product> getBasicUserProducts()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<Product>> GetBasicUserProducts()
         {
-            return new List<Product>()
+            return Ok(CreateProducts("basic user"));
+        }
+
+        private static IEnumerable<Product> CreateProducts(string prefix)
+        {
+            return new List<Product>
             {
-                new Product(){
-                Name = "basic user product1"
-                },
-                new Product(){
-                    Name= "basic user product2"
-                }
+                new() { Name = $"{prefix} product1" },
+                new() { Name = $"{prefix} product2" }
             };
         }
     }

@@ -1,4 +1,7 @@
-﻿using User.Core.Model;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using User.Core.Model;
 using User.Repository;
 
 namespace User.Service
@@ -6,34 +9,35 @@ namespace User.Service
     public class UserInfoService
     {
         private readonly UserInfoRepository _userInfoRepository;
+
         public UserInfoService(UserInfoRepository userInfoRepository)
         {
             _userInfoRepository = userInfoRepository;
         }
 
-        public async Task<UserInfo> getUserInfoByEmail(string email)
+        public Task<List<UserInfo>> GetUserInfosAsync(CancellationToken cancellationToken = default)
         {
-            return await _userInfoRepository.getUserInfoByEmail(email);
+            return _userInfoRepository.GetAsync(cancellationToken);
         }
 
-        public List<UserInfo> getUserInfos()
+        public Task<UserInfo?> GetUserInfoByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
-            return _userInfoRepository.Get();
+            return _userInfoRepository.GetUserInfoByEmailAsync(email, cancellationToken);
         }
 
-        public void addUserInfo(UserInfo userInfo)
+        public Task AddUserInfoAsync(UserInfo userInfo, CancellationToken cancellationToken = default)
         {
-            _userInfoRepository.Add(userInfo);
+            return _userInfoRepository.AddAsync(userInfo, cancellationToken);
         }
 
-        public async Task updateUserInfo(UserInfo userInfo)
+        public Task UpdateUserInfoAsync(UserInfo userInfo, CancellationToken cancellationToken = default)
         {
-            await _userInfoRepository.Update(userInfo);
+            return _userInfoRepository.UpdateAsync(userInfo, cancellationToken);
         }
 
-        public void removeUserInfo(UserInfo userInfo)
+        public Task RemoveUserInfoAsync(UserInfo userInfo, CancellationToken cancellationToken = default)
         {
-            _userInfoRepository.Remove(userInfo);
+            return _userInfoRepository.RemoveAsync(userInfo, cancellationToken);
         }
     }
 }
